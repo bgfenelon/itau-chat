@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Typography } from "@mui/material";
 
 export const ChatContainer = styled.div`
-  width: 50%;
+  width: 50vw;
   height: 85vh;
   margin: 40px auto;
   display: flex;
@@ -14,7 +14,7 @@ export const ChatContainer = styled.div`
 
 export const ChatHeader = styled.div`
   padding: 16px;
-  background-color: #f3691fff; /* primary.main */
+  background-color: #d25f22ff;
   color: white;
   border-bottom: 1px solid #ccc;
 `;
@@ -39,15 +39,26 @@ export const MessageRow = styled.div<{ justify: string }>`
 `;
 
 export const MessageBubble = styled.div<{ isUser: boolean }>`
-  padding: 12px;
+  padding: 12px 16px;
   max-width: 350px;
-  border-radius: 12px;
-  background-color: ${props => (props.isUser ? "#ef9b6dff" : "#f3691fff")};
+  border-radius: 16px;
+  background-color: ${props => (props.isUser ? "#dd9670ff" : "#d25f22ff")};
   color: ${props => (props.isUser ? "white" : "#ffff")};
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  font-family: "Roboto", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  letter-spacing: 0.3px;
 `;
 
 export const HeaderTitle = styled(Typography)`
   font-weight: bold;
+`;
+
+export const MetaData = styled(Typography)`
+  font-size: 0.7rem;
+  color: gray;
+  margin-top: 2px;
 `;

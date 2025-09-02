@@ -8,13 +8,12 @@ import {
   MessageRow,
   MessageBubble,
   HeaderTitle,
+  MetaData,
 } from "./styled";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+import { saveMessages, loadMessages, Message } from "../../utils/chatStorage";
+
+const USER_ID = "user1"; // Pode gerar dinamicamente ou usar autenticação
 
 export default function ChatItau() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,14 +21,27 @@ export default function ChatItau() {
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
+  // Carrega histórico do localStorage ao iniciar
   useEffect(() => {
+    const savedMessages = loadMessages(USER_ID);
+    setMessages(savedMessages);
+  }, []);
+
+  // Salva histórico e scrolla para baixo sempre que mensagens mudam
+  useEffect(() => {
+    saveMessages(USER_ID, messages);
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages]);
 
   const sendPrompt = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: input };
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: input,
+      timestamp: Date.now(),
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setLoading(true);
@@ -47,6 +59,9 @@ export default function ChatItau() {
         id: crypto.randomUUID(),
         role: "assistant",
         content: data.message || "Sem resposta",
+        timestamp: Date.now(),
+        model: data.model,
+        finishReason: data.finish_reason,
       };
 
       // efeito de "digitando"
@@ -66,7 +81,12 @@ export default function ChatItau() {
       console.error(err);
       setMessages(prev => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: "Erro ao gerar resposta" },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Erro ao gerar resposta",
+          timestamp: Date.now(),
+        },
       ]);
     } finally {
       setLoading(false);
@@ -76,14 +96,21 @@ export default function ChatItau() {
   return (
     <ChatContainer>
       <ChatHeader>
-        <HeaderTitle variant="h6">Chat Itau</HeaderTitle>
+        <HeaderTitle variant="h6">Chat Itaú</HeaderTitle>
       </ChatHeader>
 
       <ChatBody>
         {messages.map(msg => (
           <MessageRow key={msg.id} justify={msg.role === "user" ? "flex-end" : "flex-start"}>
             {msg.role === "assistant" && <Avatar style={{ marginRight: 8, background:"transparent" }}>🤖</Avatar>}
-            <MessageBubble isUser={msg.role === "user"}>{msg.content}</MessageBubble>
+            <div>
+              <MessageBubble isUser={msg.role === "user"}>{msg.content}</MessageBubble>
+              <MetaData>
+                {msg.model ? `Modelo: ${msg.model} • ` : ""}
+                {msg.finishReason ? `Status: ${msg.finishReason} • ` : ""}
+                {new Date(msg.timestamp).toLocaleString()}
+              </MetaData>
+            </div>
             {msg.role === "user" && <Avatar style={{ marginLeft: 8, background:"transparent" }}>👤</Avatar>}
           </MessageRow>
         ))}
@@ -106,7 +133,7 @@ export default function ChatItau() {
               }
             }}
           />
-          <Button variant="contained" onClick={sendPrompt} disabled={loading} style={{background:"#f3691fff"}}>
+          <Button variant="contained" color="primary" onClick={sendPrompt} disabled={loading} style={{background:"#d25f22ff"}}>
             {loading ? <CircularProgress size={18} color="inherit" /> : "Enviar"}
           </Button>
         </div>
